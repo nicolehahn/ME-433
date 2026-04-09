@@ -47,7 +47,7 @@ int main()
             write_to_chip(OLAT, 0x00); // set GP7 to low
         }
 
-
+        index++;
     }
 
     
