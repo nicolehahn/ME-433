@@ -16,7 +16,7 @@
 
 // define functions
 void write_to_chip(uint8_t reg, uint8_t data);
-void read_chip(uint8_t reg);
+uint8_t read_chip(uint8_t reg);
 
 
 int main()
@@ -36,17 +36,25 @@ int main()
     int index = 0; // initialize index for blinking
 
     while (true) {
-        printf("Hello, world!\n");
-        sleep_ms(1000);
-
+        uint8_t buf;
+        buf = read_chip(GPIO);
+        uint8_t test = buf << 7;
+    
+        if(!test && 0xFF){ // check if button is pressed. Using pull up resistor so 0 = pressed.
+            write_to_chip(OLAT, 0x80); // set GP7 to high
+        }
+        else{
+            write_to_chip(OLAT, 0x00); // set GP7 to low
+        }
         // blink light
+        /*
         if(index % 2 == 0){
             write_to_chip(OLAT, 0x80); // set GP7 to high
         }
         else{
             write_to_chip(OLAT, 0x00); // set GP7 to low
         }
-
+        */
         index++;
     }
 
@@ -60,9 +68,11 @@ void write_to_chip(uint8_t reg, uint8_t data){
         i2c_write_blocking(i2c_default, ADDR, buf, 2, false);
     }
 
-void read_chip(uint8_t reg){
+uint8_t read_chip(uint8_t reg){
         uint8_t buf;
 
         i2c_write_blocking(i2c_default, ADDR, &reg, 1, true);  // true to keep host control of bus
         i2c_read_blocking(i2c_default, ADDR, &buf, 1, false);  // false - finished with bus
+
+        return buf;
     }
