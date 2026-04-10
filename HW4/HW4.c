@@ -42,6 +42,20 @@ int main()
         ssd1306_clear();
         */
         drawMessage(0, 0, "If you are reading this it's already too late...");
+        sleep_ms(1000);
+        ssd1306_clear();
+        drawMessage(0, 0, "This message will self destruct in 10 seconds.");
+        drawMessage(0, 0, "This message will self destruct in 9 seconds.");
+        drawMessage(0, 0, "This message will self destruct in 8 seconds.");
+        drawMessage(0, 0, "This message will self destruct in 7 seconds.");
+        drawMessage(0, 0, "This message will self destruct in 6 seconds.");
+        drawMessage(0, 0, "This message will self destruct in 5 seconds.");
+        drawMessage(0, 0, "This message will self destruct in 4 seconds.");
+        drawMessage(0, 0, "This message will self destruct in 3 seconds.");
+        drawMessage(0, 0, "This message will self destruct in 2 seconds.");
+        drawMessage(0, 0, "This message will self destruct in 1 seconds.");
+        drawMessage(0, 0, "This message will self destruct in 0 seconds.");
+        sleep_ms(1000);
 
     }
 }
@@ -63,12 +77,27 @@ void drawMessage(unsigned char x, unsigned char y, unsigned char message[]){
     int v = 0; // vertical character placement
     while(message[i] != 0){
         drawLetter(x+h, y+v, message[i]);
-        sleep_ms(100);
+        sleep_ms(20); // add a delay for fun
+
+        // check if next word will fit
+        int left = (127 - h) / 6; // see how many more characters can fit
+        for(int c = 1; c <= left; c++){ // look at the next characters that will fit on the line
+            if(message[i+c] == ' '){ // if there is a space in there it's all good so continue to print
+                break;
+            }
+            else if(c == left){ // if it reaches the end of the loop with no space that means the word won't fit
+                h = 0; // reset horizontal counter
+                v = v + 8; // go to next line
+            }
+        }
         i++;
         h = h + 6; // increment horizontal placement by one letter plus one space
+
+        /* prevent letter rollover
         if(h + 6 > 127){ // check to see if next letter will run off screen
             h = 0;
             v = v + 8; // go to next row
         }
+        */
     }
 }
