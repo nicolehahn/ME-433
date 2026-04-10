@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
+#include "ssd1306.h"
+#include "font.h"
 
 // I2C defines
 // This example will use I2C0 on GPIO8 (SDA) and GPIO9 (SCL) running at 400KHz.
@@ -9,6 +11,8 @@
 #define I2C_SDA 8
 #define I2C_SCL 9
 
+// define functions
+void drawLetter(unsigned char x, unsigned char y, unsigned char letter);
 
 
 int main()
@@ -20,12 +24,33 @@ int main()
     
     gpio_set_function(I2C_SDA, GPIO_FUNC_I2C);
     gpio_set_function(I2C_SCL, GPIO_FUNC_I2C);
-    gpio_pull_up(I2C_SDA);
-    gpio_pull_up(I2C_SCL);
-    // For more examples of I2C use see https://github.com/raspberrypi/pico-examples/tree/master/i2c
 
+    ssd1306_setup();
     while (true) {
-        printf("Hello, world!\n");
-        sleep_ms(1000);
+        sleep_ms(100);
+        drawLetter(0, 0,'H');
+        sleep_ms(100);
+        drawLetter(6, 0, 'E');
+        sleep_ms(100);
+        drawLetter(12, 0, 'L');
+        sleep_ms(100);
+        drawLetter(18, 0, 'L');
+        sleep_ms(100);
+        drawLetter(24, 0, 'O');
+        sleep_ms(100);
+        ssd1306_clear();
+
+
     }
+}
+
+void drawLetter(unsigned char x, unsigned char y, unsigned char letter){
+    for(int i = 0; i < 5; i++){ // loop through columns
+        char column = ASCII[letter - 0x20][i];
+        for(int j = 0; j < 8; j++){
+            bool bit = ((column >> j) & 0x1);
+            ssd1306_drawPixel(x+i, y+j, bit);
+        }
+    }
+    ssd1306_update();
 }
