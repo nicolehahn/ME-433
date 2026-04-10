@@ -13,7 +13,7 @@
 
 // define functions
 void drawLetter(unsigned char x, unsigned char y, unsigned char letter);
-
+void drawMessage(unsigned char x, unsigned char y, unsigned char message[]);
 
 int main()
 {
@@ -27,6 +27,7 @@ int main()
 
     ssd1306_setup();
     while (true) {
+        /*
         sleep_ms(100);
         drawLetter(0, 0,'H');
         sleep_ms(100);
@@ -39,7 +40,8 @@ int main()
         drawLetter(24, 0, 'O');
         sleep_ms(100);
         ssd1306_clear();
-
+        */
+        drawMessage(0, 0, "If you are reading this it's already too late...");
 
     }
 }
@@ -53,4 +55,20 @@ void drawLetter(unsigned char x, unsigned char y, unsigned char letter){
         }
     }
     ssd1306_update();
+}
+
+void drawMessage(unsigned char x, unsigned char y, unsigned char message[]){
+    int i = 0; // charachter index
+    int h = 0; // horizontal character placement
+    int v = 0; // vertical character placement
+    while(message[i] != 0){
+        drawLetter(x+h, y+v, message[i]);
+        sleep_ms(100);
+        i++;
+        h = h + 6; // increment horizontal placement by one letter plus one space
+        if(h + 6 > 127){ // check to see if next letter will run off screen
+            h = 0;
+            v = v + 8; // go to next row
+        }
+    }
 }
