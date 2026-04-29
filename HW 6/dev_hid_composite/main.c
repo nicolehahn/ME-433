@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "bsp/board_api.h" // able to communicate with any board RP2350
+#include "bsp/board_api.h"
 #include "tusb.h"
 
 #include "usb_descriptors.h"
