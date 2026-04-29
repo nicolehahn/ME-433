@@ -1,10 +1,14 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
+#include "ssd1306.h"
+#include "font.h"
 
+// I2C defines
 #define I2C_PORT i2c0
 #define I2C_SDA 12
 #define I2C_SCL 13
+
 #define ADDR 0x68
 
 // config registers
@@ -30,7 +34,13 @@
 #define GYRO_ZOUT_L  0x48
 #define WHO_AM_I     0x75
 
+// display defines
+#define CENTER_X 64
+#define CENTER_Y 17
+
 // function declarations
 void write_to_chip(uint8_t reg, uint8_t data);
 uint8_t read_chip(uint8_t reg);
 int16_t combine(uint8_t high, uint8_t low);
+void drawLetter(unsigned char x, unsigned char y, unsigned char letter);
+void drawMessage(unsigned char x, unsigned char y, unsigned char message[]);

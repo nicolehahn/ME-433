@@ -24,14 +24,17 @@ int main()
     write_to_chip(ACCEL_CONFIG, 0x00); // set accelerometer sensitivity to +- 2g
     write_to_chip(GYRO_CONFIG, 0x18); // set gyro sensitvity to +- 2000 degrees
 
+    ssd1306_setup();
+    ssd1306_clear();
+    ssd1306_update();
+
     while (true) {
-        sleep_ms(1000);
 
         // read all 14 output registers
         uint8_t data[14];
 
-        i2c_write_blocking(i2c_default, ADDR, (uint8_t[]){ACCEL_XOUT_H}, 1, true);
-        i2c_read_blocking(i2c_default, ADDR, data, 14, false);
+        i2c_write_blocking(I2C_PORT, ADDR, (uint8_t[]){ACCEL_XOUT_H}, 1, true);
+        i2c_read_blocking(I2C_PORT, ADDR, data, 14, false);
 
         // combine data
         int16_t a_xout = combine(data[0], data[1]);
@@ -44,40 +47,7 @@ int main()
         int16_t g_yout = combine(data[10], data[11]);
         int16_t g_zout = combine(data[12], data[13]);
 
-        /* accelerometer
-        uint8_t a_xout_h = read_chip(ACCEL_XOUT_H);
-        uint8_t a_xout_l = read_chip(ACCEL_XOUT_L);
-        uint8_t a_yout_h = read_chip(ACCEL_YOUT_H);
-        uint8_t a_yout_l = read_chip(ACCEL_YOUT_L);
-        uint8_t a_zout_h = read_chip(ACCEL_ZOUT_H);
-        uint8_t a_zout_l = read_chip(ACCEL_ZOUT_L);
-
-        // gyroscope
-        uint8_t g_xout_h = read_chip(GYRO_XOUT_H);
-        uint8_t g_xout_l = read_chip(GYRO_XOUT_L);
-        uint8_t g_yout_h = read_chip(GYRO_YOUT_H);
-        uint8_t g_yout_l = read_chip(GYRO_YOUT_L);
-        uint8_t g_zout_h = read_chip(GYRO_ZOUT_H);
-        uint8_t g_zout_l = read_chip(GYRO_ZOUT_L);
-
-        // thermometer
-        uint8_t t_out_h = read_chip(TEMP_OUT_H);
-        uint8_t t_out_l = read_chip(TEMP_OUT_L);
-
-        // combine into 16 bit signed ints
-        int16_t a_xout = combine(a_xout_h, a_xout_l);
-        int16_t a_yout = combine(a_yout_h, a_yout_l);
-        int16_t a_zout = combine(a_zout_h, a_zout_l);
-
-        int16_t g_xout = combine(g_xout_h, g_xout_l);
-        int16_t g_yout = combine(g_yout_h, g_yout_l);
-        int16_t g_zout = combine(g_zout_h, g_zout_l);
-
-        int16_t t_out = combine(t_out_h, t_out_l);
-
-        */
-
-        // turn outputs into readable values;
+        // turn outputs into readable values
 
         float a_x = a_xout*0.000061;
         float a_y = a_yout*0.000061;
@@ -100,12 +70,35 @@ int main()
 
         printf("temp: %f\r\n", t);
 
-
+        // draw on screen
+        ssd1306_clear();
+        if(a_x > 0){
+            for(int i = 0; i < (int)(a_x*40); i++){
+            ssd1306_drawPixel(-i + CENTER_X, CENTER_Y, 1); // horizontal line
+            }
+        }
+        else{
+            for(int i = (int)(a_x*40); i < 0; i++){
+            ssd1306_drawPixel(-i + CENTER_X, CENTER_Y, 1); // horizontal line
+            }
+        }
+        if(a_y > 0){
+            for(int i = 0; i < (int)(a_y*20); i++){
+            ssd1306_drawPixel(CENTER_X, i + CENTER_Y, 1); // horizontal line
+            }
+        }
+        else{
+            for(int i = (int)(a_y*20); i < 0; i++){
+            ssd1306_drawPixel(CENTER_X, i + CENTER_Y, 1); // horizontal line
+            }
+        }
+        ssd1306_update();
     }
 
 
 }
 
+// helper functions
 
 void write_to_chip(uint8_t reg, uint8_t data){
     uint8_t buf[2];
@@ -126,5 +119,48 @@ uint8_t read_chip(uint8_t reg){
 int16_t combine(uint8_t high, uint8_t low){
     int16_t val = (int16_t)((high << 8) | low);
     return val;
+}
+
+void drawLetter(unsigned char x, unsigned char y, unsigned char letter){
+    for(int i = 0; i < 5; i++){ // loop through columns
+        char column = ASCII[letter - 0x20][i];
+        for(int j = 0; j < 8; j++){
+            bool bit = ((column >> j) & 0x1);
+            ssd1306_drawPixel(x+i, y+j, bit);
+        }
+    }
+    // ssd1306_update(); // to make letters appear individually
+}
+
+void drawMessage(unsigned char x, unsigned char y, unsigned char message[]){
+    int i = 0; // charachter index
+    int h = 0; // horizontal character placement
+    int v = 0; // vertical character placement
+    while(message[i] != 0){
+        drawLetter(x+h, y+v, message[i]);
+
+        
+        // prevent word rollover
+        int left = (127 - h) / 6; // see how many more characters can fit
+        for(int c = 1; c <= left; c++){ // look at the next characters that will fit on the line
+            if(message[i+c] == ' ' || message[i+c] == '\0'){ // if there is a space in there it's all good so continue to print
+                break;
+            }
+            else if(c == left){ // if it reaches the end of the loop with no space that means the word won't fit
+                h = 0; // reset horizontal counter
+                v = v + 8; // go to next line
+            }
+        }
+            
+        i++;
+        h = h + 6; // increment horizontal placement by one letter plus one space
+
+        /* prevent letter rollover
+        if(h + 6 > 127){ // check to see if next letter will run off screen
+            h = 0;
+            v = v + 8; // go to next row
+        }
+        */
+    }
 }
 
