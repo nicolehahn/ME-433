@@ -26,6 +26,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
+#include "IMU_lib.h"
 
 #include "bsp/board_api.h"
 #include "tusb.h"
@@ -56,6 +58,11 @@ void hid_task(void);
 int main(void)
 {
   board_init();
+  init_IMU();
+
+  // init button
+  gpio_init(BUTTON_PIN);
+  gpio_set_dir(BUTTON_PIN, GPIO_IN);
 
   // init device stack on configured roothub port
   tud_init(BOARD_TUD_RHPORT);
@@ -69,7 +76,7 @@ int main(void)
     tud_task(); // tinyusb device task
     led_blinking_task();
 
-    hid_task();
+    hid_task(); // we edit this
   }
 }
 
@@ -138,10 +145,30 @@ static void send_hid_report(uint8_t report_id, uint32_t btn)
 
     case REPORT_ID_MOUSE:
     {
-      int8_t const delta = 5;
+      static bool button = 0;
+      if (button_event() == 1){
+        if (button == 0){
+          button = 1;
+        }
+        else{
+          button = 0;
+        }
+      }
 
-      // no button, right + down, no scroll, no pan
-      tud_hid_mouse_report(REPORT_ID_MOUSE, 0x00, delta, delta, 0, 0);
+      if(button == 0){ // IMU mode
+        IMU_Data d = read_IMU(); // get data from IMU
+        tud_hid_mouse_report(REPORT_ID_MOUSE, 0x00, -d.ax*10, d.ay*10, 0, 0);
+      }
+      else{ // circle mode
+        static float delta = 0;
+        tud_hid_mouse_report(REPORT_ID_MOUSE, 0x00,
+            (int8_t)(10 * sin(delta)),
+            (int8_t)(10 * cos(delta)),
+            0, 0);
+
+        delta += 0.03;
+      }
+      
     }
     break;
 
@@ -220,7 +247,7 @@ void hid_task(void)
   }else
   {
     // Send the 1st of report chain, the rest will be sent by tud_hid_report_complete_cb()
-    send_hid_report(REPORT_ID_KEYBOARD, btn);
+    send_hid_report(REPORT_ID_MOUSE, btn);
   }
 }
 
