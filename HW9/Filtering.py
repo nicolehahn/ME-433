@@ -2,8 +2,9 @@ import csv
 import matplotlib.pyplot as plt # for plotting
 import numpy as np # for sine function
 
+# function definitions
 def fft2(t1, y1, t2, y2):
-    Fs = 10000 # sample rate
+    Fs = len(t1)/t1[-1] # sample rate
 
     n = len(y1) # length of the signal
     k = np.arange(n)
@@ -22,11 +23,11 @@ def fft2(t1, y1, t2, y2):
     Y2 = Y[range(int(n/2))]
 
     fig, (ax1, ax2, ax3, ax4) = plt.subplots(4, 1)
-    ax1.plot(t1,y1,'b')
+    ax1.plot(t1,y1,'black')
     ax1.set_xlabel('Time')
     ax1.set_ylabel('Amplitude')
-    ax1.set_title('Raw Data vs Filtered Data (MAF)')
-    ax2.loglog(frq,abs(Y1),'b') # plotting the fft
+    ax1.set_title('Signal B Raw Data vs Filtered Data (MAF x = ' + str(x) + ')')
+    ax2.loglog(frq,abs(Y1),'black') # plotting the fft
     ax2.set_xlabel('Freq (Hz)')
     ax2.set_ylabel('|Y(freq)|')
 
@@ -39,8 +40,44 @@ def fft2(t1, y1, t2, y2):
     
     plt.show()
 
+def fft(t1, y1, t2, y2):
+    Fs = len(t1)/t1[-1] # sample rate
+
+    n = len(y1) # length of the signal
+    k = np.arange(n)
+    T = n/Fs
+    frq = k/T # two sides frequency range
+    frq = frq[range(int(n/2))] # one side frequency range
+    Y = np.fft.fft(y1)/n # fft computing and normalization
+    Y1 = Y[range(int(n/2))]
+
+    n = len(y2) # length of the signal
+    k = np.arange(n)
+    T = n/Fs
+    frq = k/T # two sides frequency range
+    frq = frq[range(int(n/2))] # one side frequency range
+    Y = np.fft.fft(y2)/n # fft computing and normalization
+    Y2 = Y[range(int(n/2))]
+
+    fig, (ax13, ax24) = plt.subplots(2, 1)
+
+    ax13.plot(t1, y1, 'black', label='Raw data')
+    ax13.plot(t2, y2, 'r', label='Filtered data', linewidth=2.0)
+    ax13.set_xlabel('Time')
+    ax13.set_ylabel('Amplitude')
+    ax13.set_title('Signal D Raw Data vs Filtered Data (MAF x = ' + str(x) + ')')
+
+    ax24.loglog(frq, abs(Y1), 'black')
+    ax24.loglog(frq, abs(Y2), 'r', linewidth=2.0)
+    ax24.set_xlabel('Freq (Hz)')
+    ax24.set_ylabel('|Y(freq)|')
+
+    handles, labels = ax13.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper right')
+
+    plt.show()
+
 def MAF(data1, x):
-    x = 1000
     filtered = []
     for index in range(len(data1)):
         sum = 0
@@ -67,12 +104,16 @@ def get_data(file):
             data1.append(float(row[1])) # second column
     return t, data1
 
-t, data1 = get_data('sigA.csv')
+# MAF inputs
+x = 2000
 
-filtered_MAF = MAF(data1, 5000)
+
+t, data1 = get_data('sigD.csv')
+
+filtered_MAF = MAF(data1, x)
 
 
-fft2(t, data1, t, filtered_MAF)
+fft(t, data1, t, filtered_MAF)
 
 
     
