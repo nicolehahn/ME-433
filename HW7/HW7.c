@@ -46,10 +46,9 @@ static inline void cs_deselect(uint cs_pin) {
 
 void write_data(int channel, float v) {
     uint16_t voltage = (uint16_t)(v / 3.3f * 4095);
-    if (voltage > 4095) voltage = 4095;  // clamp just in case
 
     uint8_t data[2];
-    data[0] = 0b01110000;                        // BUF=0, GA=1, SHDN=1
+    data[0] = 0b01110000;
     data[0] |= (channel & 0x1) << 7;            // channel select in bit 15
     data[0] |= (voltage >> 8) & 0x0F;           // top 4 bits of 12-bit value
     data[1]  = voltage & 0xFF;                   // bottom 8 bits
