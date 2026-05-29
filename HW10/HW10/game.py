@@ -23,6 +23,8 @@ import math
 import random
 import pygame
 import os
+import serial
+ser = serial.Serial('COM3') # the name of your port here
 
 # ── Window ────────────────────────────────────────────────────────────────────
 WIDTH  = 900
@@ -188,19 +190,35 @@ winner_text      = ""
 # Return -1 (move up), 0 (stay), or +1 (move down).
 # ══════════════════════════════════════════════════════════════════════════════
 
+#def get_p2_input():
+#    if keyboard.a:
+#        return -1
+#    if keyboard.d:
+#        return 1
+#    return 0
+def read_serial():
+    global up1, down1, up2, down2
+    try:
+        if ser.in_waiting > 0:  # only read if a full line is ready
+            n_bytes = ser.readline()
+            s = str(n_bytes)
+            result = [int(x) for x in s[s.find('(')+1:s.find(')')].split(',')]
+            up1, down1, up2, down2 = result[0], result[1], result[2], result[3]
+    except Exception:
+        pass
+
 def get_p1_input():
-    if keyboard.a:
-        return -1
-    if keyboard.d:
-        return 1
-    return 0
+    return down1-up1
 
 def get_p2_input():
-    if keyboard.left:
-        return -1
-    if keyboard.right:
-        return 1
-    return 0
+    return down2-up2
+
+#def get_p2_input():
+#    if keyboard.left:
+#        return -1
+#    if keyboard.right:
+#        return 1
+#    return 0
 
 # ── Game logic helpers ────────────────────────────────────────────────────────
 def check_score():
@@ -226,6 +244,8 @@ def update():
     global frame, waiting_to_start
 
     frame += 1
+
+    read_serial()
 
     if waiting_to_start:
         if keyboard.space:
