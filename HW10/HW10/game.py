@@ -35,8 +35,8 @@ TITLE  = "PONG"
 # USER INPUTS — change these
 # ══════════════════════════════════════════════════════════════════════════════
 
-P1_SCORE_SOUND = None   # e.g. "sounds/p1_score.wav"
-P2_SCORE_SOUND = None   # e.g. "sounds/p2_score.wav"
+P1_SCORE_SOUND = 'sounds/clang.wav'   # e.g. "sounds/p1_score.wav"
+P2_SCORE_SOUND = 'sounds/gasp.wav'   # e.g. "sounds/p2_score.wav"
 
 BALL_IMAGE_PATH = 'images/face.png'  # e.g. "ball.png" or "C:/images/myimage.jpg"
 

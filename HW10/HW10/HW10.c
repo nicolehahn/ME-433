@@ -12,7 +12,7 @@ int main()
         
         get_button_states(buttons);
         printf("(%d, %d, %d, %d)\r\n", buttons[0], buttons[1], buttons[2], buttons[3]);
-        sleep_ms(100/3); // 33Hz
+        sleep_ms(100/3); // 30Hz
 
     }
 }
