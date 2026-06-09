@@ -37,7 +37,8 @@ pico_sdk_init()
 
 add_executable(Final_Project Final_Project.c 
 encoder.c
-hx711.c)
+hx711.c
+)
 
 pico_set_program_name(Final_Project "Final_Project")
 pico_set_program_version(Final_Project "0.1")
@@ -58,6 +59,9 @@ target_include_directories(Final_Project PRIVATE
 # Add any user requested libraries
 target_link_libraries(Final_Project 
         hardware_i2c
+        hardware_pwm
+        hardware_adc
+        hardware_timer
         )
 
 pico_add_extra_outputs(Final_Project)
