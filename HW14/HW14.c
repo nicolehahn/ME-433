@@ -4,7 +4,7 @@
 
 // filter inputs
 #define A 0.1
-#define AVERAGE -396500
+#define AVERAGE -394000
 
 int main()
 {

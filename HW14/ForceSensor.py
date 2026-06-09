@@ -63,7 +63,7 @@ def read_force_sensor_samples(port='COM3', baudrate=115200, timeout=1):
 
             try:
                 sample_num = int(parts[0])
-                current_time = float(parts[1])
+                current_time = float(parts[1]) /1e6
                 raw_value = float(parts[2])
                 filtered_value = float(parts[3])
             except ValueError:
