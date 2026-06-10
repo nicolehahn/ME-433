@@ -44,7 +44,7 @@ float actual_current_arr[400];
 float desired_current_arr[400];
 
 float kp = 4.0;
-float ki = 0.5;
+float ki = 0.01;
 
 uint slice_in1, slice_in2; 
 uint chan_in1, chan_in2;
@@ -64,7 +64,7 @@ int main()
 
     
 
-    float average = AVERAGE;
+    
     absolute_time_t start_time = get_absolute_time();
     int i = 0;
     int sum = 0;
@@ -73,6 +73,7 @@ int main()
         sum = sum + hx711_read_raw();
     }
     int force_average = sum/500;
+    float average = force_average;
 
 
     while(true){
@@ -91,18 +92,18 @@ int main()
             desired_current = 1000;
         }
         else if(angle < 20 && angle > -20){
-            if(average2 > 1500 && average2 < 5500){
-                desired_current = (-120*(average2/1500.0));
+            if(average2 > 2500 && average2 < 5500){
+                desired_current = (-100*(average2/1500.0));
             }
-            else if(average2 < -1500 && average2 > -5500){
-                desired_current = (-120*(average2/1500.0));
+            else if(average2 < -2500 && average2 > -5500){
+                desired_current = (-100*(average2/1500.0));
             }
             else{
                 desired_current = 0;
             }
         }
         else{
-            desired_current = -2*angle;
+            desired_current = -4*angle;
         }
         
         // PI
@@ -115,12 +116,12 @@ int main()
         if (control_signal > PWM_WRAP) control_signal = PWM_WRAP;
         if (control_signal < -PWM_WRAP) control_signal = -PWM_WRAP;
 
-        if(control_signal > -30.0 && control_signal < 30.0){
+        if(control_signal > -20.0 && control_signal < 20.0){
             control_signal = 0;
         }
         set_motor_pwm(control_signal);
 
-        printf("%d %llu %d %d %.2f\r\n", i+1, t, data, (int)average-force_average, angle);
+        printf("%d %llu %d %d %.2f\r\n", i+1, t, data, average2, angle);
     }
 }
 
